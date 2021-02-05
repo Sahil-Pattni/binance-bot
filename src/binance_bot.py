@@ -1,11 +1,13 @@
-from urllib import urlencode
+from urllib.parse import urlencode
 import requests
 import hashlib # SHA-256 encryption for HMAC signing
 import hmac # HMAC keyed hashing
+import os
 
 # Custom Exception class for Binance related errors
 class BinanceException(Exception):
     pass
+
 
 class BinanceBot:
     # Base url for API
@@ -22,7 +24,7 @@ class BinanceBot:
         # Used when accessing private user data.
 
         # pre-requisite timestamp
-        timestamp = int(requests.get(f'{BASE}/api/v1/time').json()['serverTime'])
+        timestamp = int(requests.get(f'{self.BASE}/api/v1/time').json()['serverTime'])
 
         # Prepare request parameters
         params = {'timestamp': timestamp}
@@ -48,21 +50,31 @@ class BinanceBot:
             params=params,
             headers=headers
         ).json()
+
+    
+    def __get_response(self, url, params=None, err_msg="Error"):
+        # Attempts to make a GET request with the given url and request parameters.
+
+        if params is not None:
+            response = requests.get(url, params=params).json()
+        else:
+            response = requests.get(url).json()
+        
+        # Throw BinanceException if returned JSON is an error code.
+        if 'code' in response:
+            raise BinanceException(f"{err_msg}: code {response['code']}: {response['msg']}")
+
+        return response
+
+
     
 
-    def rolling_24hr(self, ticker_pair) -> dict:
+    def rolling_24hr(self, ticker) -> dict:
         # Gets the rolling 24 hour statistics for a ticker
 
-        url = f'{BASE}/api/v3/ticker/24h'
-        params = {'symbol': ticker_pair}
+        url = f'{self.BASE}/api/v3/ticker/24hr'
+        params = {'symbol': ticker}
 
-        # Make request
-        response = requests.get(url, params=params).json()
+        return self.__get_response(url, params=params, err_msg="Error on 24h")
 
-        # If error in response, throw BinanceException
-        if 'code' in response:
-            raise BinanceException(f"Error in pct_change():\n{response['code']}: {response['msg']}")
-
-        # If no errors present, return JSON
-        return response
     
