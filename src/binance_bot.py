@@ -27,15 +27,16 @@ class BinanceBot:
         This type of request is used when accessing reserved information (e.g. user trades).
 
         Args:
-            url (:obj:`str`): The API endpoint for the request.
-            additional_params (:obj:`dict`, optional): A dictionary of any other parameters the request might take. Defaults to an emtpy dictionary.
-            err_msg (:obj:`str`): The error message prefix for the BinanceException error message.
+            url (`str`): The API endpoint for the request.
+            additional_params (`dict`, optional): A dictionary of any other parameters the request might take. Defaults to an emtpy dictionary.
+            err_msg (`str`): The error message prefix for the BinanceException error message.
         
         Returns:
-            dict: The JSON result of the GET request.
+            `dict`: The JSON result of the GET request.
         
         Raises:
             BinanceException: If the request is malformed or incorrect.
+
         """
         # Make an HMAC signed GET request using the API and secret keys.
         # Used when accessing private user data.
@@ -82,15 +83,16 @@ class BinanceBot:
         Attempts a regular GET request to the specified endpoint with the specified parameters.
 
         Args:
-            url (:obj:`str`): The API endpoint for the request.
-            additional_params (:obj:`dict`, optional): A dictionary of any other parameters the request might take. Defaults to an emtpy dictionary.
-            err_msg (:obj:`str`): The error message prefix for the BinanceException error message.
+            url (`str`): The API endpoint for the request.
+            additional_params (`dict`, optional): A dictionary of any other parameters the request might take. Defaults to an emtpy dictionary.
+            err_msg (`str`): The error message prefix for the BinanceException error message.
         
         Returns:
-            dict: The JSON result of the GET request.
+            `dict`: The JSON result of the GET request.
         
         Raises:
             BinanceException: If the request is malformed or incorrect.
+
         """
 
         response = requests.get(url, params=additional_params).json()
@@ -107,13 +109,14 @@ class BinanceBot:
         Gets the rolling 24 hour statistics for a ticker.
 
         Args:
-            ticker (:obj:`str`) -- the currency pair.
+            ticker (`str`) -- the currency pair.
         
         Returns:
-            dict: The JSON result of the GET request.
+            `dict`: The JSON result of the GET request.
         
         Raises:
             BinanceException: If the request is malformed or incorrect.
+
         """
 
         url = f'{self.BASE}/api/v3/ticker/24hr'
@@ -129,13 +132,14 @@ class BinanceBot:
         Gets the current market price for a given ticker, or for all tickers if no ticker is specified.
 
         Args:
-            ticker (:obj:`str`) -- the currency pair (default None)
+            ticker (`str`, optional) -- the currency pair. Defaults to None.
         
         Returns:
-            dict: The JSON result of the GET request.
+            `dict`: The JSON result of the GET request.
         
         Raises:
             BinanceException: If the request is malformed or incorrect.
+
         """
 
         url = f'{self.BASE}/api/v3/ticker/price'
@@ -144,4 +148,8 @@ class BinanceBot:
         kwargs = dict(params={'symbol': ticker}) if ticker is not None else dict()
 
         return self.__unsigned_request(url, err_msg=err_msg, **kwargs)
-  
+    
+
+    def all_orders(self, ticker, **kwargs) -> dict:
+        # TODO: Complete
+        pass
