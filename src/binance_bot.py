@@ -50,4 +50,19 @@ class BinanceBot:
         ).json()
     
 
-   
+    def rolling_24hr(self, ticker_pair) -> dict:
+        # Gets the rolling 24 hour statistics for a ticker
+
+        url = f'{BASE}/api/v3/ticker/24h'
+        params = {'symbol': ticker_pair}
+
+        # Make request
+        response = requests.get(url, params=params).json()
+
+        # If error in response, throw BinanceException
+        if 'code' in response:
+            raise BinanceException(f"Error in pct_change():\n{response['code']}: {response['msg']}")
+
+        # If no errors present, return JSON
+        return response
+    
