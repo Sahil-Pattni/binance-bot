@@ -67,14 +67,25 @@ class BinanceBot:
         return response
 
 
-    
-
     def rolling_24hr(self, ticker) -> dict:
         # Gets the rolling 24 hour statistics for a ticker
 
         url = f'{self.BASE}/api/v3/ticker/24hr'
         params = {'symbol': ticker}
 
-        return self.__get_response(url, params=params, err_msg="Error on 24h")
+        return self.__get_response(url, params=params, err_msg="Error on rolling_24hr()")
 
     
+    def price(self, ticker=None) -> dict:
+        # Gets the current market price for a given ticker, 
+        # or for all tickers if no ticker is specified
+
+        url = f'{self.BASE}/api/v3/ticker/price'
+        err_msg = "Error on latest_price()"
+        # Add params if ticker provided
+        kwargs = dict(params={'symbol': ticker}) if ticker is not None else dict()
+
+        return self.__get_response(url, err_msg=err_msg, **kwargs)
+
+
+
