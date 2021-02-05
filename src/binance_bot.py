@@ -52,7 +52,7 @@ class BinanceBot:
         ).json()
 
     
-    def __get_response(self, url, params=None, err_msg="Error"):
+    def __unsigned_request(self, url, params=None, err_msg="Error"):
         # Attempts to make a GET request with the given url and request parameters.
 
         if params is not None:
@@ -73,7 +73,7 @@ class BinanceBot:
         url = f'{self.BASE}/api/v3/ticker/24hr'
         params = {'symbol': ticker}
 
-        return self.__get_response(url, params=params, err_msg="Error on rolling_24hr()")
+        return self.__unsigned_request(url, params=params, err_msg="Error on rolling_24hr()")
 
     
     def price(self, ticker=None) -> dict:
@@ -85,7 +85,7 @@ class BinanceBot:
         # Add params if ticker provided
         kwargs = dict(params={'symbol': ticker}) if ticker is not None else dict()
 
-        return self.__get_response(url, err_msg=err_msg, **kwargs)
+        return self.__unsigned_request(url, err_msg=err_msg, **kwargs)
 
 
 
