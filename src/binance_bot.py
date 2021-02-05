@@ -19,8 +19,8 @@ class BinanceBot:
         self.secret_key = secret_key
     
 
-    def __signed_request(self, url, additional_params={}) -> dict:
-        # Generate an HMAC signed request using the API and secret keys.
+    def __signed_request(self, url, additional_params={}, err_msg="Error") -> dict:
+        # Make an HMAC signed GET request using the API and secret keys.
         # Used when accessing private user data.
 
         # pre-requisite timestamp
@@ -44,12 +44,18 @@ class BinanceBot:
         # Add  API key to headers
         headers = {'X-MBX-APIKEY'}
 
-        # Create GET request with params and headers and return resulting JSON
-        return requests.get(
+        # Create GET request with params and headers
+        response = requests.get(
             url,
             params=params,
             headers=headers
         ).json()
+
+        # Throw BinanceException if returned JSON is an error code.
+        if 'code' in response:
+            raise BinanceException(f"{err_msg}: code {response['code']}: {response['msg']}")
+        else:
+            return response
 
     
     def __unsigned_request(self, url, params=None, err_msg="Error"):
@@ -63,8 +69,8 @@ class BinanceBot:
         # Throw BinanceException if returned JSON is an error code.
         if 'code' in response:
             raise BinanceException(f"{err_msg}: code {response['code']}: {response['msg']}")
-
-        return response
+        else:
+            return response
 
 
     def rolling_24hr(self, ticker) -> dict:
