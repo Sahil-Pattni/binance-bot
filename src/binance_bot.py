@@ -20,6 +20,23 @@ class BinanceBot:
     
 
     def __signed_request(self, url, additional_params={}, err_msg="Error") -> dict:
+        """
+        HMAC SHA-256 GET request.
+
+        Attempts a HMAC (SHA-256) signed GET request using the API key and secret key.
+        This type of request is used when accessing reserved information (e.g. user trades).
+
+        Args:
+            url (:obj:`str`): The API endpoint for the request.
+            additional_params (:obj:`dict`, optional): A dictionary of any other parameters the request might take. Defaults to an emtpy dictionary.
+            err_msg (:obj:`str`): The error message prefix for the BinanceException error message.
+        
+        Returns:
+            dict: The JSON result of the GET request.
+        
+        Raises:
+            BinanceException: If the request is malformed or incorrect.
+        """
         # Make an HMAC signed GET request using the API and secret keys.
         # Used when accessing private user data.
 
@@ -58,14 +75,26 @@ class BinanceBot:
             return response
 
     
-    def __unsigned_request(self, url, params=None, err_msg="Error"):
-        # Attempts to make a GET request with the given url and request parameters.
+    def __unsigned_request(self, url, additional_params={}, err_msg="Error"):
+        """
+        Non-signed GET request.
 
-        if params is not None:
-            response = requests.get(url, params=params).json()
-        else:
-            response = requests.get(url).json()
+        Attempts a regular GET request to the specified endpoint with the specified parameters.
+
+        Args:
+            url (:obj:`str`): The API endpoint for the request.
+            additional_params (:obj:`dict`, optional): A dictionary of any other parameters the request might take. Defaults to an emtpy dictionary.
+            err_msg (:obj:`str`): The error message prefix for the BinanceException error message.
         
+        Returns:
+            dict: The JSON result of the GET request.
+        
+        Raises:
+            BinanceException: If the request is malformed or incorrect.
+        """
+
+        response = requests.get(url, params=additional_params).json()
+    
         # Throw BinanceException if returned JSON is an error code.
         if 'code' in response:
             raise BinanceException(f"{err_msg}: code {response['code']}: {response['msg']}")
@@ -74,7 +103,18 @@ class BinanceBot:
 
 
     def rolling_24hr(self, ticker) -> dict:
-        # Gets the rolling 24 hour statistics for a ticker
+        """
+        Gets the rolling 24 hour statistics for a ticker.
+
+        Args:
+            ticker (:obj:`str`) -- the currency pair.
+        
+        Returns:
+            dict: The JSON result of the GET request.
+        
+        Raises:
+            BinanceException: If the request is malformed or incorrect.
+        """
 
         url = f'{self.BASE}/api/v3/ticker/24hr'
         params = {'symbol': ticker}
@@ -83,8 +123,20 @@ class BinanceBot:
 
     
     def price(self, ticker=None) -> dict:
-        # Gets the current market price for a given ticker, 
-        # or for all tickers if no ticker is specified
+        """
+        Current market price.
+
+        Gets the current market price for a given ticker, or for all tickers if no ticker is specified.
+
+        Args:
+            ticker (:obj:`str`) -- the currency pair (default None)
+        
+        Returns:
+            dict: The JSON result of the GET request.
+        
+        Raises:
+            BinanceException: If the request is malformed or incorrect.
+        """
 
         url = f'{self.BASE}/api/v3/ticker/price'
         err_msg = "Error on latest_price()"
@@ -92,6 +144,4 @@ class BinanceBot:
         kwargs = dict(params={'symbol': ticker}) if ticker is not None else dict()
 
         return self.__unsigned_request(url, err_msg=err_msg, **kwargs)
-
-
-
+  
