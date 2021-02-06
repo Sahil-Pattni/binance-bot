@@ -6,11 +6,25 @@ import os
 
 # Custom Exception class for Binance related errors
 class BinanceException(Exception):
+    """
+    Wrapper class for base Exception class.
+
+    """
     pass
 
 
 class BinanceBot:
-    # Base url for API
+    """
+    Class to interact with Binance API.
+
+    The BinanceBot class interacts with the Binance API to retrieve market 
+    and user data.
+
+    Attributes:
+        BASE (`str`): The base endpoint prefix for all Binance API calls.
+
+    """
+
     BASE = 'https://api.binance.com'
 
     # Initializes a bot with the API keys
@@ -19,7 +33,7 @@ class BinanceBot:
         self.secret_key = secret_key
     
 
-    def __signed_request(self, url, additional_params={}, err_msg="Error") -> dict:
+    def signed_request(self, url, additional_params={}, err_msg="Error") -> dict:
         """
         HMAC SHA-256 GET request.
 
@@ -76,7 +90,7 @@ class BinanceBot:
             return response
 
     
-    def __unsigned_request(self, url, additional_params={}, err_msg="Error"):
+    def unsigned_request(self, url, additional_params={}, err_msg="Error"):
         """
         Non-signed GET request.
 
