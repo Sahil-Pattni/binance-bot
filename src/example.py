@@ -5,9 +5,12 @@ if __name__ == '__main__':
     env = os.environ
     api = env.get('BINANCE_KEY')
     secret = env.get('BINANCE_SECRET')
-
+    ticker = 'BTCUSDT'
     binance = BinanceBot(api, secret)
     try:
-        print(binance.rolling_24hr('BTCUSDT'))
+        latest = binance.price()
+        print(latest)
     except BinanceException as e:
         print(e)
+    
+    
