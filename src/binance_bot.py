@@ -184,7 +184,7 @@ class BinanceBot:
             BinanceException: If the request is malformed or incorrect.
 
         """
-        url = f'{self.BASE}/api/v3/allOrders'
+        url = f'{self.BASE}/api/v3/myTrades'
         params = {'symbol': ticker}
         err_msg = f"Error fetching trades on {ticker}."
         # Response from signed request
