@@ -33,7 +33,7 @@ class BinanceBot:
         self.secret_key = secret_key
     
 
-    def signed_request(self, url, additional_params={}, err_msg="Error") -> dict:
+    def __signed_request(self, url, additional_params={}, err_msg="Error") -> dict:
         """
         HMAC SHA-256 GET request.
 
@@ -90,7 +90,7 @@ class BinanceBot:
             return response
 
     
-    def unsigned_request(self, url, additional_params={}, err_msg="Error"):
+    def __unsigned_request(self, url, additional_params={}, err_msg="Error"):
         """
         Non-signed GET request.
 
@@ -164,6 +164,28 @@ class BinanceBot:
         return self.__unsigned_request(url, err_msg=err_msg, **kwargs)
     
 
-    def all_orders(self, ticker, **kwargs) -> dict:
-        # TODO: Complete
-        pass
+    def trades(self, ticker, **kwargs) -> dict:
+        """
+        All trades for a given ticker.
+
+        Args:
+            ticker (`str`) -- the currency pair.
+            **kwargs -- Additional parameters, optional. Includes:
+                - startTime (`int`)
+                - endTime (`int`)
+                - fromId (`int`): TradeId to fetch from. Default fetches most recent.
+                - limit (`int`): default 500; max 1000
+                - recvWindow (`int`)
+        
+        Returns:
+            `dict`: The JSON result of the GET request.
+        
+        Raises:
+            BinanceException: If the request is malformed or incorrect.
+
+        """
+        url = '{BASE}/api/v3/myTrades'
+        params = {'symbol': ticker}
+        err_msg = f"Error fetching trades on {ticker}."
+        # Response from signed request
+        return self.__signed_request(url, additional_params=params, err_msg=err_msg)
