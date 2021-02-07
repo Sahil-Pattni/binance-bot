@@ -74,7 +74,7 @@ class BinanceBot:
         params['signature'] = hashed
 
         # Add  API key to headers
-        headers = {'X-MBX-APIKEY'}
+        headers = {'X-MBX-APIKEY': self.api_key}
 
         # Create GET request with params and headers
         response = requests.get(
@@ -184,7 +184,7 @@ class BinanceBot:
             BinanceException: If the request is malformed or incorrect.
 
         """
-        url = '{BASE}/api/v3/myTrades'
+        url = f'{self.BASE}/api/v3/allOrders'
         params = {'symbol': ticker}
         err_msg = f"Error fetching trades on {ticker}."
         # Response from signed request
