@@ -159,7 +159,7 @@ class BinanceBot:
         url = f'{self.BASE}/api/v3/ticker/price'
         err_msg = "Error on latest_price()"
         # Add params if ticker provided
-        kwargs = dict(params={'symbol': ticker}) if ticker is not None else dict()
+        kwargs = dict(additonal_params={'symbol': ticker}) if ticker is not None else dict()
 
         return self.__unsigned_request(url, err_msg=err_msg, **kwargs)
     
