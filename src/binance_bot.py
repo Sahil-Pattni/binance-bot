@@ -164,28 +164,49 @@ class BinanceBot:
         return float(self.__unsigned_request(url, err_msg=err_msg, **kwargs)['price'])
     
 
-    def trades(self, ticker, **kwargs) -> dict:
+    def price_at_time(self, ticker, time) -> float:
+        url = f'{self.BASE}/api/v3/klines'
+        half_minute = 30 * 1000
+        params = {
+            'symbol': ticker,
+            'interval': '1m',
+            'startTime': time - half_minute,
+            'endTime': time + half_minute
+        }
+        err_msg = f"Error getting historical price for {ticker}"
+
+        return (self.__unsigned_request(url, additional_params=params, err_msg=err_msg))
+    
+
+    def trades(self, ticker, against_tickers=['USDT', 'BTC', 'BNB']) -> dict:
         """
         All trades for a given ticker.
 
+        Gets all trades for the given ticker, against a list of other tickers.
+
         Args:
-            ticker (`str`) -- the currency pair.
-            **kwargs -- Additional parameters, optional. Includes:
-                - startTime (`int`)
-                - endTime (`int`)
-                - fromId (`int`): TradeId to fetch from. Default fetches most recent.
-                - limit (`int`): default 500; max 1000
-                - recvWindow (`int`)
+            ticker (`str`) -- the currency.
+            against_tickers (list: `str`) -- A list of tickers to get trades for the ticker against.
+                Defaults to ['USDT', 'BTC', 'BNB'].
         
         Returns:
-            `dict`: The JSON result of the GET request.
+            `dict`: A dictionary containing JSON results of the GET requests for each currency.
         
         Raises:
             BinanceException: If the request is malformed or incorrect.
 
         """
         url = f'{self.BASE}/api/v3/myTrades'
-        params = {'symbol': ticker}
         err_msg = f"Error fetching trades on {ticker}."
-        # Response from signed request
-        return self.__signed_request(url, additional_params=params, err_msg=err_msg)
+
+        # Holds trades for ticker against all `against_tickers`
+        all_trades = {}
+
+        for against_ticker in against_tickers:
+            # skip if coin is the same
+            if against_ticker == ticker:
+                continue
+            params = {'symbol': f'{ticker}{against_ticker}'}
+            all_trades[against_ticker] = self.__signed_request(url, additional_params=params, err_msg=err_msg)
+
+        return all_trades
