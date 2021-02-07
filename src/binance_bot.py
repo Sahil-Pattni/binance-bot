@@ -139,7 +139,7 @@ class BinanceBot:
         return self.__unsigned_request(url, params=params, err_msg="Error on rolling_24hr()")
 
     
-    def price(self, ticker=None) -> dict:
+    def price(self, ticker=None) -> float:
         """
         Current market price.
 
@@ -149,7 +149,7 @@ class BinanceBot:
             ticker (`str`, optional) -- the currency pair. Defaults to None.
         
         Returns:
-            `dict`: The JSON result of the GET request.
+            `float`: The price of the ticker.
         
         Raises:
             BinanceException: If the request is malformed or incorrect.
@@ -161,7 +161,7 @@ class BinanceBot:
         # Add params if ticker provided
         kwargs = dict(additional_params={'symbol': ticker}) if ticker is not None else dict()
 
-        return self.__unsigned_request(url, err_msg=err_msg, **kwargs)
+        return float(self.__unsigned_request(url, err_msg=err_msg, **kwargs)['price'])
     
 
     def trades(self, ticker, **kwargs) -> dict:
