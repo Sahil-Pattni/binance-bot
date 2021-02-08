@@ -7,11 +7,11 @@ if __name__ == '__main__':
     pp = pprint.PrettyPrinter(indent=4)
     api = env.get('BINANCE_KEY')
     secret = env.get('BINANCE_SECRET')
-    ticker = 'ADAUSDT'
+    ticker = 'ADA'
 
     binance = BinanceBot(api, secret)
     try:
-        latest = binance.trades(ticker)
+        latest = binance.get_margin_trades(ticker)
         pp.pprint(latest)
     except BinanceException as e:
         print(e)
