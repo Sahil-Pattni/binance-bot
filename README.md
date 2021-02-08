@@ -3,6 +3,6 @@
 A Python interface to interact with the Binance API.
 
 Functionality:
-- [ ] Retrieve user balances.
-- [ ] Calculate daily profit and losses.
+- [X] Retrieve user balances.
+- [X] Calculate portfolio gains. (NOTE: Only works for one coin at a time)
 - [ ] Automated trading strategies.
