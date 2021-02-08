@@ -16,71 +16,86 @@ def connect() -> BinanceBot:
     return BinanceBot(api, secret)
 
 
+def get_trades_in_usdt(bot, ticker):
+    try:
+        # Tickers the argument ticker trades against
+        against_tickers = ['USDT', 'BTC', 'BNB']
+        spot_trades = bot.spot_trades(ticker, against_tickers=against_tickers)
+        margin_trades = bot.margin_trades(ticker, against_tickers=against_tickers)
+
+        # All trades
+        all_trades = []
+
+        # Convert prices and commissions to USDT
+        for account in [spot_trades, margin_trades]:
+            # Check against each coin
+            for coin in account:
+                coin_trades = account[coin]
+                # Skip USDT since no conversion needed
+                for trade in coin_trades:
+                    timestamp = int(trade['time'])
+                    commission_asset = trade['commissionAsset']
+                    
+                    # No need to convert USDT
+                    if coin != 'USDT':
+                        # Get coin price in USDT at time of trade.
+                        # This is an approximation, the opening price within a minute of the trade
+                        usdt_price_at_trade = float(bot.price_at_time(f'{coin}USDT', timestamp)[0][1])
+                        # Convert to USDT
+                        trade['price'] = float(trade['price']) * usdt_price_at_trade
+                    if commission_asset != 'USDT':
+                        # Get commission asset price in USDT at time of trade.
+                        # This is an approximation, the opening price within a minute of the trade
+                        usdt_price_at_trade = float(bot.price_at_time(f'{commission_asset}USDT', timestamp)[0][1])
+                        # Convert to USDT
+                        trade['commission'] = float(trade['commission']) * usdt_price_at_trade
+                    
+                # Add to all_trades now that it is in USDT
+                all_trades.extend(coin_trades)
+        
+        return all_trades
+        
+    except BinanceException as e:
+        print(e)
+
+
 def coin_position(bot, ticker):
     try:
-        # current price for the coin
+        # Current price of ticker in USDT
         current_price_usdt = bot.price(f'{ticker}USDT')
+        # Get all trades
+        trades = get_trades_in_usdt(bot, ticker)
+        
+        # Capital gains (USDT), Amount of coin held, total commission fees
+        gains, coin_balance, fees = 0,0,0
 
-        # coins traded against
-        against_tickers = ['USDT', 'BTC', 'BNB']
+        # Sort trades from earliest to latest
+        trades.sort(key=lambda x: x['time'])
 
-        # get all trades
-        all_trades = bot.trades(ticker, against_tickers)
-
-        # USDT trades
-        usdt_trades = all_trades['USDT']
-
-        # Convert traded against coins to equiv. USDT value at time of trade
-        for coin in all_trades:
-            # skip USDT since no conversion required
-            if coin == 'USDT':
-                continue
-
-            # Get all trades for the coin
-            coin_trades = all_trades[coin]
-
-            # Convert to USDT open at candle within one minute of the transaction time.
-            # NOTE: this means that the price will be an approximation, not 100% accurate.
-            for trade in coin_trades:
-                timestamp = int(trade['time'])
-                historical_price = float(bot.price_at_time(f'{coin}USDT', timestamp)[0][1])
-                trade['price'] = float(trade['price']) * historical_price
-            
-            # Add to USDT trades once prices have been converted
-            usdt_trades.extend(all_trades[coin])
-
-        # Profit/Loss (realized + unrealized) in USDT.
-        gains = 0
-        # Amount of ticker in balance.
-        ticker_amount = 0
-
-        # Sort by transaction time (earliest to latest)
-        usdt_trades.sort(key=lambda x: x['time'])
-
-        for trade in usdt_trades:
+        for trade in trades:
             price = float(trade['price'])
             qty = float(trade['qty'])
             is_buy = trade['isBuyer']
             time = int(trade['time'])
-            action = 'Bought' if is_buy else 'Sold'
+            commission = float(trade['commission'])
+            action = 'BUY' if is_buy else 'SELL'
+            # Direction to move position
+            direction = 1 if is_buy else -1
 
-            # offset for Binance error
-            # if qty == 175 and not is_buy:
-            #     qty = 86
+            # Print trade
+            print(f'{action.ljust(4)} {str(qty).zfill(5)} ADA at {price:,.4f} USDT')
 
-            print(f'{action.ljust(7)} {qty:6,.2f} ADA at {price:,.4f} USDT')
-
-            # Change to portfolio
+            # Change to portfolio (USDT)
             change = qty * (current_price_usdt - price)
-
-            # Add if buy, subtract if sell
-            gains = gains + change if is_buy else gains - change
-            ticker_amount = ticker_amount + qty if is_buy else ticker_amount - qty
+            gains += direction * change
+            coin_balance += direction * qty
+            gains -= commission
         
         print(f"\n\nGains: ${gains}")
-        print(f"HOLDING: {ticker_amount} ADA ({current_price_usdt * ticker_amount:.2f} USDT)")
-        print(f"1 ADA = {current_price_usdt:.3f} USDT")     
+        print(f"HOLDING: {coin_balance} {ticker} ({current_price_usdt * coin_balance:.2f} USDT)")
+        print(f"1 {ticker} = {current_price_usdt:.3f} USDT")  
 
+    
     except BinanceException as e:
         print(e)
 
@@ -90,3 +105,4 @@ if __name__ == '__main__':
     bot = connect()
 
     coin_position(bot, 'ADA')
+
