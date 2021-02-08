@@ -16,7 +16,18 @@ def connect() -> BinanceBot:
     return BinanceBot(api, secret)
 
 
-def get_trades_in_usdt(bot, ticker):
+def get_trades_in_usdt(bot, ticker) -> list:
+    """
+    List of transaction dicts, with the prices converted to USDT
+
+    Args:
+        bot (`binanceBot`): The BinanceBot instance.
+        ticker (`str`): The symbol of the cryptocurrency. NOTE: This is not a currency pair ticker.
+
+    Returns:
+        A compiled list of all trades in USDT.
+        
+    """
     try:
         # Tickers the argument ticker trades against
         against_tickers = ['USDT', 'BTC', 'BNB']
@@ -60,6 +71,10 @@ def get_trades_in_usdt(bot, ticker):
 
 
 def coin_position(bot, ticker):
+    """
+    Prints all trades, total USDT gains, holdings and current price
+    
+    """
     try:
         # Current price of ticker in USDT
         current_price_usdt = bot.price(f'{ticker}USDT')
@@ -78,12 +93,12 @@ def coin_position(bot, ticker):
             is_buy = trade['isBuyer']
             time = int(trade['time'])
             commission = float(trade['commission'])
-            action = 'BUY' if is_buy else 'SELL'
+            action = '[+] BUY' if is_buy else '[-] SELL'
             # Direction to move position
             direction = 1 if is_buy else -1
 
             # Print trade
-            print(f'{action.ljust(4)} {str(qty).zfill(5)} ADA at {price:,.4f} USDT')
+            print(f'{action.ljust(8)} {str(qty).zfill(5)} ADA at {price:,.4f} USDT')
 
             # Change to portfolio (USDT)
             change = qty * (current_price_usdt - price)
