@@ -178,7 +178,7 @@ class BinanceBot:
         return (self.__unsigned_request(url, additional_params=params, err_msg=err_msg))
     
 
-    def trades(self, ticker, against_tickers=['USDT', 'BTC', 'BNB']) -> dict:
+    def spot_trades(self, ticker, against_tickers=['USDT', 'BTC', 'BNB']) -> dict:
         """
         All trades for a given ticker.
 
@@ -198,6 +198,39 @@ class BinanceBot:
         """
         url = f'{self.BASE}/api/v3/myTrades'
         err_msg = f"Error fetching trades on {ticker}."
+
+        # Holds trades for ticker against all `against_tickers`
+        all_trades = {}
+
+        for against_ticker in against_tickers:
+            # skip if coin is the same
+            if against_ticker == ticker:
+                continue
+            params = {'symbol': f'{ticker}{against_ticker}'}
+            all_trades[against_ticker] = self.__signed_request(url, additional_params=params, err_msg=err_msg)
+
+        return all_trades
+
+    def margin_trades(self, ticker, against_tickers=['USDT', 'BTC', 'BNB']) -> dict:
+        """
+        All margin trades for a given ticker.
+
+        Gets all margin trades for the given ticker, against a list of other tickers.
+
+        Args:
+            ticker (`str`) -- the currency.
+            against_tickers (list: `str`) -- A list of tickers to get trades for the ticker against.
+                Defaults to ['USDT', 'BTC', 'BNB'].
+        
+        Returns:
+            `dict`: A dictionary containing JSON results of the GET requests for each currency.
+        
+        Raises:
+            BinanceException: If the request is malformed or incorrect.
+
+        """
+        url = f'{self.BASE}/sapi/v1/margin/myTrades'
+        err_msg = f"Error fetching margin trades on {ticker}."
 
         # Holds trades for ticker against all `against_tickers`
         all_trades = {}
